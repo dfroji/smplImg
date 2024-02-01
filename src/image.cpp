@@ -4,13 +4,18 @@
 
 #include "lodepng.h"
 
-bool decode_image(std::vector<unsigned char>& image, 
-                  unsigned int& width, 
-                  unsigned int& height, 
-                  const char* filename) {
+bool Image::decode_image(const char* filename) {
 
-    // Try to decode an image with the given filename
-    unsigned int error = lodepng::decode(image, width, height, filename);
+    unsigned int width, height;
+    lodepng::State state;
+    std::vector<unsigned char> data;
+    std::vector<unsigned char> buffer;
+
+    // Load given file
+    lodepng::load_file(buffer, filename);
+
+    // Try to decode given file
+    unsigned error = lodepng::decode(data, width, height, state, buffer);
  
     // If decoding returned an error
     if(error) { 
@@ -21,16 +26,22 @@ bool decode_image(std::vector<unsigned char>& image,
         return 1;
     }
 
+
+    width_ = width;
+    height_ = height;
+    bitdepth_ = state.info_png.color.bitdepth;
+    channels_ = lodepng_get_channels(&state.info_png.color);
+
     return 0;
 }
 
-bool encode_image(const char* filename,
-                  std::vector<unsigned char>& image,
-                  unsigned int& width, 
-                  unsigned int& height) {
+bool Image::encode_image(const char* filename) {
+
+    unsigned int width, height;
+    std::vector<unsigned char> data = encode_data_();
 
     // Try to encode data to given file path
-    unsigned int error = lodepng::encode(filename, image, width, height);
+    unsigned error = lodepng::encode(filename, data, width_, height_);
     
     // If encoding returned an error
     if (error) {
@@ -40,6 +51,17 @@ bool encode_image(const char* filename,
             << std::endl;
         return 1;
     }
-
+    
     return 0;
+}
+
+//// PRIVATE ////
+
+void Image::decode_data_(std::vector<unsigned char> data) {
+    
+}
+
+std::vector<unsigned char> Image::encode_data_() {
+    std::vector<unsigned char> data;
+    return data;
 }

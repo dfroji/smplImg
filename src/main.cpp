@@ -24,15 +24,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::vector<unsigned char> image;
-    unsigned int width, height;
-
-    // Exit if decoding is unsuccessful
-    if (decode_image(image, width, height, input)) return 1;
-
-    // Exit if encoding is unsuccessful
-    if (encode_image(output, image, width, height)) return 1;
-
     return 0;
 }
 
