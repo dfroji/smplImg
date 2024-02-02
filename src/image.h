@@ -36,6 +36,7 @@ class Image {
 
     private:
         std::map<Coordinate, Pixel*> data_;
+        std::vector<Pixel*> pixels_;
 
         unsigned int width_;
         unsigned int height_;

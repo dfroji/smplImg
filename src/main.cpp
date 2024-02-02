@@ -24,6 +24,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    Image image = Image();
+
+    if (image.decode_image(input)) return 1;
+    if (image.encode_image(output)) return 1;
+
     return 0;
 }
 
