@@ -33,8 +33,8 @@ class Image {
         // Return 0 if successful.
         bool encode_image(const char* filename);
 
-        // Filter the image with the given option
-        void filter(const char* filter_option);
+        // Filter the image with the given option.
+        void filter(const char* filter, const char* filter_option);
 
     private:
         std::map<Coordinate, Pixel> original_data_;
@@ -57,9 +57,9 @@ class Image {
         Pixel get_pixel_at_(Coordinate xy, int fill = 0);
 
         // Get pixels under n*n-size mask
-        std::vector<Pixel> get_under_mask_(Coordinate mid, int size = 3);
+        std::vector<Pixel> get_under_mask_(Coordinate mid, int size);
 
         // Filter data with a median filter
-        void median_filter_(int size = 3);
+        void median_filter_(int size);
 
 };

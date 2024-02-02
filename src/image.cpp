@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
 #include "lodepng.h"
 
@@ -68,8 +69,8 @@ bool Image::encode_image(const char* filename) {
     return 0;
 }
 
-void Image::filter(const char* filter_option) {
-    median_filter_();
+void Image::filter(const char* filter, const char* filter_option) {
+    if (!strcmp(filter, "median")) median_filter_(atoi(filter_option));
 }
 
 //// PRIVATE ////
@@ -111,6 +112,8 @@ std::vector<unsigned char> Image::encode_data_() {
 }
 
 Pixel Image::get_pixel_at_(Coordinate xy, int fill) {
+
+    // If the pixel is out of bounds, return a filler pixel.
     if (xy.x < 0 || xy.x >= width_ || xy.y < 0 || xy.y >= height_) {
         return Pixel({fill, fill, fill, fill});
     }
@@ -121,6 +124,8 @@ Pixel Image::get_pixel_at_(Coordinate xy, int fill) {
 std::vector<Pixel> Image::get_under_mask_(Coordinate middle, int size) {
     std::vector<Pixel> pixels;
 
+    // Find the pixels under the mask, 
+    // the filtered pixel being in the middle
     int min = -(size - 1) / 2;
     int max = (size - 1) / 2;
     for (int i = min; i < max + 1; i++) {
@@ -133,15 +138,21 @@ std::vector<Pixel> Image::get_under_mask_(Coordinate middle, int size) {
 }
 
 void Image::median_filter_(int size) {
+
+    // Process every pixel of the image
     for (int y = 0; y < height_; y++) {
         for (int x = 0; x < width_; x++) {
 
-            std::vector<Pixel> pixels = get_under_mask_({x, y});
+            // Get the pixels neighbouring pixels
+            std::vector<Pixel> pixels = get_under_mask_({x, y}, size);
+
+            // Get each pixel's color values and get the median of each color
+            // The new pixel's color values will be the medians
 
             std::vector<int> red_values;
             std::vector<int> green_values;
             std::vector<int> blue_values;
-
+            
             for (const Pixel& pixel : pixels) {
                 red_values.push_back(pixel.red);
                 green_values.push_back(pixel.green);
