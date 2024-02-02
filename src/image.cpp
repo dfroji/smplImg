@@ -1,6 +1,8 @@
 #include "image.h"
 
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 #include "lodepng.h"
 
@@ -26,7 +28,7 @@ bool Image::decode_image(const char* filename) {
 
     // Try to decode given file
     unsigned error = lodepng::decode(data, width, height, state, buffer);
- 
+    
     // If decoding returned an error
     if(error) { 
         std::cout 
@@ -66,83 +68,96 @@ bool Image::encode_image(const char* filename) {
     return 0;
 }
 
+void Image::filter(const char* filter_option) {
+    median_filter_();
+}
+
 //// PRIVATE ////
 
 void Image::decode_data_(std::vector<unsigned char> data) {
     int x = 0;
     int y = 0;
-    for (int i = 0; i < data.size(); i++) {
-        Pixel* pixel = new Pixel{0, 0, 0, 0};
-        switch (channels_) {
-            case 1:
-                pixel->red = data[i];
-                original_data_.insert({Coordinate{x,y}, *pixel});
-                filtered_data_.insert({Coordinate{x,y}, pixel});
-                pixels_.push_back(pixel);
-                break;
-            case 2:
-                pixel->red = data[i];
-                pixel->alpha = data[i+1];
-                original_data_.insert({Coordinate{x,y}, *pixel});
-                filtered_data_.insert({Coordinate{x,y}, pixel});
-                pixels_.push_back(pixel);
-                i += 1;
-                break;
-            case 3:
-                pixel->red = data[i];
-                pixel->green = data[i+1];
-                pixel->blue = data[i+2];
-                original_data_.insert({Coordinate{x,y}, *pixel});
-                filtered_data_.insert({Coordinate{x,y}, pixel});
-                pixels_.push_back(pixel);
-                i += 2;
-                break;
-            case 4:
-                pixel->red = data[i];
-                pixel->green = data[i+1];
-                pixel->blue = data[i+2];
-                pixel->alpha = data[i+3];
-                original_data_.insert({Coordinate{x,y}, *pixel});
-                filtered_data_.insert({Coordinate{x,y}, pixel});
-                pixels_.push_back(pixel);
-                i += 3;
-                break;
-        }
+    for (int i = 0; i < data.size(); i += 4) {
+        Pixel* pixel = new Pixel{0, 0, 0, static_cast<int>(pow(2, bitdepth_))};
 
-        if (x == width_ - 1) {
+        pixel->red = data[i];
+        pixel->green = data[i+1];
+        pixel->blue = data[i+2];
+        pixel->alpha = data[i+3];
+        original_data_.insert({Coordinate{x,y}, *pixel});
+        filtered_data_.insert({Coordinate{x,y}, pixel});
+        pixels_.push_back(pixel);
+
+        if (x + 1 == width_) {
             x = 0;
             y++;
         } else {
             x++;
         }
-
     }
 }
 
 std::vector<unsigned char> Image::encode_data_() {
     std::vector<unsigned char> data;
-    data.reserve(pixels_.size() * channels_);
+    data.reserve(pixels_.size() * 4);
     for (Pixel* pixel : pixels_) {
-        switch (channels_) {
-            case 1:
-                data.push_back(pixel->red);
-                break;
-            case 2:
-                data.push_back(pixel->red);
-                data.push_back(pixel->alpha);
-                break;
-            case 3:
-                data.push_back(pixel->red);
-                data.push_back(pixel->green);
-                data.push_back(pixel->blue);
-                break;
-            case 4:
-                data.push_back(pixel->red);
-                data.push_back(pixel->green);
-                data.push_back(pixel->blue);
-                data.push_back(pixel->alpha);
-                break;
-        }
+        data.push_back(pixel->red);
+        data.push_back(pixel->green);
+        data.push_back(pixel->blue);
+        data.push_back(pixel->alpha);
+        
     }
     return data;
+}
+
+Pixel Image::get_pixel_at_(Coordinate xy, int fill) {
+    if (xy.x < 0 || xy.x >= width_ || xy.y < 0 || xy.y >= height_) {
+        return Pixel({fill, fill, fill, fill});
+    }
+
+    return original_data_.at(xy);
+}
+
+std::vector<Pixel> Image::get_under_mask_(Coordinate middle, int size) {
+    std::vector<Pixel> pixels;
+
+    int min = -(size - 1) / 2;
+    int max = (size - 1) / 2;
+    for (int i = min; i < max + 1; i++) {
+        for (int j = min; j <= max; j++) {
+            pixels.push_back(get_pixel_at_({middle.x + i, middle.y + j}));
+        }
+    }
+
+    return pixels;
+}
+
+void Image::median_filter_(int size) {
+    for (int y = 0; y < height_; y++) {
+        for (int x = 0; x < width_; x++) {
+
+            std::vector<Pixel> pixels = get_under_mask_({x, y});
+
+            std::vector<int> red_values;
+            std::vector<int> green_values;
+            std::vector<int> blue_values;
+
+            for (const Pixel& pixel : pixels) {
+                red_values.push_back(pixel.red);
+                green_values.push_back(pixel.green);
+                blue_values.push_back(pixel.blue);
+            }
+
+            std::sort(red_values.begin(), red_values.end());
+            std::sort(green_values.begin(), green_values.end());
+            std::sort(blue_values.begin(), blue_values.end());
+
+            Pixel* filtered_pixel = filtered_data_.at({x,y});
+            int median = (pixels.size()) / 2;
+            filtered_pixel->red = red_values[median];
+            filtered_pixel->green = green_values[median];
+            filtered_pixel->blue = blue_values[median];
+
+        }
+    }
 }

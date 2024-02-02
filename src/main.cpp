@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     Image image = Image();
 
     if (image.decode_image(input)) return 1;
+    image.filter(input);
     if (image.encode_image(output)) return 1;
 
     return 0;
