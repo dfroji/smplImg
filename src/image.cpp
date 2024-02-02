@@ -76,13 +76,15 @@ void Image::decode_data_(std::vector<unsigned char> data) {
         switch (channels_) {
             case 1:
                 pixel->red = data[i];
-                data_.insert({Coordinate{x,y}, pixel});
+                original_data_.insert({Coordinate{x,y}, *pixel});
+                filtered_data_.insert({Coordinate{x,y}, pixel});
                 pixels_.push_back(pixel);
                 break;
             case 2:
                 pixel->red = data[i];
                 pixel->alpha = data[i+1];
-                data_.insert({Coordinate{x,y}, pixel});
+                original_data_.insert({Coordinate{x,y}, *pixel});
+                filtered_data_.insert({Coordinate{x,y}, pixel});
                 pixels_.push_back(pixel);
                 i += 1;
                 break;
@@ -90,7 +92,8 @@ void Image::decode_data_(std::vector<unsigned char> data) {
                 pixel->red = data[i];
                 pixel->green = data[i+1];
                 pixel->blue = data[i+2];
-                data_.insert({Coordinate{x,y}, pixel});
+                original_data_.insert({Coordinate{x,y}, *pixel});
+                filtered_data_.insert({Coordinate{x,y}, pixel});
                 pixels_.push_back(pixel);
                 i += 2;
                 break;
@@ -99,7 +102,8 @@ void Image::decode_data_(std::vector<unsigned char> data) {
                 pixel->green = data[i+1];
                 pixel->blue = data[i+2];
                 pixel->alpha = data[i+3];
-                data_.insert({Coordinate{x,y}, pixel});
+                original_data_.insert({Coordinate{x,y}, *pixel});
+                filtered_data_.insert({Coordinate{x,y}, pixel});
                 pixels_.push_back(pixel);
                 i += 3;
                 break;

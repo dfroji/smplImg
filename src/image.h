@@ -35,7 +35,8 @@ class Image {
         bool encode_image(const char* filename);
 
     private:
-        std::map<Coordinate, Pixel*> data_;
+        std::map<Coordinate, Pixel> original_data_;
+        std::map<Coordinate, Pixel*> filtered_data_;
         std::vector<Pixel*> pixels_;
 
         unsigned int width_;
