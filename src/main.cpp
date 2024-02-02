@@ -30,7 +30,7 @@ std::vector<char*> get_filter_option(char** begin,
 }
 
 bool invalid_filter(){
-    std::cout << "Error: invalid filter" << std::endl;
+    std::cout << "Error: invalid filter option" << std::endl;
     return 1;
 }
 
@@ -50,16 +50,29 @@ int main(int argc, char* argv[]) {
     std::vector<char*> filter_arg = get_filter_option(argv, argv+argc, "-h");
     const char* filter = filter_arg[0];
     const char* filter_option = filter_arg[1];
-    if (filter == nullptr) return invalid_filter();
-    if (strcmp(filter, "median")) return invalid_filter();
-    else if (filter_option == nullptr 
-            || (atoi(filter_option) < 3 
-            || atoi(filter_option) % 3 != 0)
-            ) {
-        std::cout 
-        << "Error: option for median filter should be a multiple of 3" 
-        << std::endl;
-        return 1;
+    if (filter == nullptr) {
+        return invalid_filter();
+    } else {
+        // Exit if not a filter (placeholder solution until more filters are added)
+        if (strcmp(filter, "median") && strcmp(filter, "laplace")) {
+            return invalid_filter();
+        }
+        // Exit if invalid option for valid filter
+        if (!strcmp(filter, "median") && (filter_option == nullptr 
+                                          || (atoi(filter_option)) < 3 
+                                          || atoi(filter_option) % 3 != 0
+                                         )) {
+                
+            std::cout 
+            << "Error: option for median filter should be a multiple of 3" 
+            << std::endl;
+            return 1;
+        } else if (!strcmp(filter, "laplace") && (filter_option == nullptr)) {
+            std::cout 
+            << "Error: laplace filter should have a coefficient option"
+            << std::endl;
+            return 1;
+        }
     }
 
     Image image = Image();

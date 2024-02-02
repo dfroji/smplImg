@@ -71,6 +71,7 @@ bool Image::encode_image(const char* filename) {
 
 void Image::filter(const char* filter, const char* filter_option) {
     if (!strcmp(filter, "median")) median_filter_(atoi(filter_option));
+    if (!strcmp(filter, "laplace")) laplace_filter_(atoi(filter_option));
 }
 
 //// PRIVATE ////
@@ -111,7 +112,7 @@ std::vector<unsigned char> Image::encode_data_() {
     return data;
 }
 
-Pixel Image::get_pixel_at_(Coordinate xy, int fill) {
+Pixel Image::get_pixel_at_(Coordinate xy, const int& fill) {
 
     // If the pixel is out of bounds, return a filler pixel.
     if (xy.x < 0 || xy.x >= width_ || xy.y < 0 || xy.y >= height_) {
@@ -121,7 +122,7 @@ Pixel Image::get_pixel_at_(Coordinate xy, int fill) {
     return original_data_.at(xy);
 }
 
-std::vector<Pixel> Image::get_under_mask_(Coordinate middle, int size) {
+std::vector<Pixel> Image::get_under_mask_(Coordinate middle, const int& size) {
     std::vector<Pixel> pixels;
 
     // Find the pixels under the mask, 
@@ -137,7 +138,7 @@ std::vector<Pixel> Image::get_under_mask_(Coordinate middle, int size) {
     return pixels;
 }
 
-void Image::median_filter_(int size) {
+void Image::median_filter_(const int& size) {
 
     // Process every pixel of the image
     for (int y = 0; y < height_; y++) {
@@ -169,6 +170,37 @@ void Image::median_filter_(int size) {
             filtered_pixel->green = green_values[median];
             filtered_pixel->blue = blue_values[median];
 
+        }
+    }
+}
+
+void Image::add_to_color_value_(int& color_value, const int& n) {
+    
+    color_value += n;
+
+    // Limit color_value between 0 and 2^bitdepth
+    if (color_value < 0) color_value = 0;
+    else if (color_value > pow(2, bitdepth_)) color_value = pow(2, bitdepth_);
+}
+
+void Image::laplace_operation_(Pixel* pixel, const int& n) {
+    add_to_color_value_(pixel->red, n);
+    add_to_color_value_(pixel->green, n);
+    add_to_color_value_(pixel->blue, n);
+}
+
+void Image::laplace_filter_(const int& k) {
+
+    // Process every pixel
+    for (int y = 0; y < height_; y++) {
+        for (int x = 0; x < width_; x++) {
+
+            // Perform laplace operation
+            laplace_operation_(filtered_data_.at({x,y}), k*(-4));
+            if (y > 0) laplace_operation_(filtered_data_.at({x,y-1}), k);
+            if (y < height_ - 1) laplace_operation_(filtered_data_.at({x,y+1}), k);
+            if (x > 0) laplace_operation_(filtered_data_.at({x-1,y}), k);
+            if (x < width_ - 1) laplace_operation_(filtered_data_.at({x+1,y}), k);
         }
     }
 }

@@ -54,12 +54,22 @@ class Image {
 
         // Return pixel at coordinate
         // If invalid Coordinate, return pixel with values given by fill
-        Pixel get_pixel_at_(Coordinate xy, int fill = 0);
+        Pixel get_pixel_at_(Coordinate xy, const int& fill = 0);
 
         // Get pixels under n*n-size mask
-        std::vector<Pixel> get_under_mask_(Coordinate mid, int size);
+        std::vector<Pixel> get_under_mask_(Coordinate mid, const int& size);
 
         // Filter data with a median filter
-        void median_filter_(int size);
+        void median_filter_(const int& size);
+
+        // Add n to specified color value of a pixel
+        void add_to_color_value_(int& color_value, const int& n);
+
+        // Change a pixel's color values by equal amount
+        // Used in laplace filter
+        void laplace_operation_(Pixel* pixel, const int& n);
+
+        // Filter data with a standard laplace operation
+        void laplace_filter_(const int& k);
 
 };
