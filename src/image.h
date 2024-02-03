@@ -62,12 +62,8 @@ class Image {
         // Filter data with a median filter
         void median_filter_(const int& size);
 
-        // Add n to specified color value of a pixel
-        void add_to_color_value_(int& color_value, const int& n);
-
-        // Change a pixel's color values by equal amount
-        // Used in laplace filter
-        void laplace_operation_(Pixel* pixel, const int& n);
+        // Limit the given color value to correspond with bitdepth
+        void limit_color_value_(int& color_value);
 
         // Filter data with a highboost filter
         void highboost_filter_(const int& k, bool is_diagonal);

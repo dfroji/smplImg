@@ -51,7 +51,6 @@ bool Image::decode_image(const char* filename) {
 
 bool Image::encode_image(const char* filename) {
 
-    unsigned int width, height;
     std::vector<unsigned char> data = encode_data_();
 
     // Try to encode data to given file path
@@ -175,52 +174,62 @@ void Image::median_filter_(const int& size) {
     }
 }
 
-void Image::add_to_color_value_(int& color_value, const int& n) {
-    
-    color_value += n;
-
-    // Limit color_value between 0 and 2^bitdepth
+void Image::limit_color_value_(int& color_value) {
     if (color_value < 0) color_value = 0;
-    else if (color_value > pow(2, bitdepth_)) color_value = pow(2, bitdepth_);
-}
-
-void Image::laplace_operation_(Pixel* pixel, const int& n) {
-    add_to_color_value_(pixel->red, n);
-    add_to_color_value_(pixel->green, n);
-    add_to_color_value_(pixel->blue, n);
+    else if (color_value > pow(2, bitdepth_) - 1) color_value = pow(2, bitdepth_);
 }
 
 void Image::highboost_filter_(const int& k, bool is_diagonal) {
-
+    
     // Process every pixel
     for (int y = 0; y < height_; y++) {
         for (int x = 0; x < width_; x++) {
 
-            // If diagonal, perform the laplace opeartion with 
-            // diagonal pixels in mind
+            std::vector<Pixel> pixels = get_under_mask_({x,y}, 3);
+
+            Pixel* filtered_pixel = filtered_data_.at({x,y});
+            int& red = filtered_pixel->red;
+            int& green = filtered_pixel->green;
+            int& blue = filtered_pixel->blue;
+
+            red = 0;
+            green = 0;
+            blue = 0;
+
             if (is_diagonal) {
-                laplace_operation_(filtered_data_.at({x,y}), 8*k + 1);
-                if (y > 0 && x > 0) {
-                    laplace_operation_(filtered_data_.at({x-1,y-1}), -k);
-                }
-                if (y > 0 && x < width_ - 1) {
-                    laplace_operation_(filtered_data_.at({x+1,y-1}), -k);
-                }
-                if (y < height_ - 1 && x > 0 ) {
-                    laplace_operation_(filtered_data_.at({x-1,y+1}), -k);
-                }
-                if (y < height_ - 1 && x < width_ - 1) {
-                    laplace_operation_(filtered_data_.at({x+1,y+1}), -k);
+                for (int i = 0; i < pixels.size(); i++) {
+                    Pixel p = pixels[i];
+                    if (i == pixels.size() / 2) {
+                        red += p.red * (8*k+1);
+                        green += p.green * (8*k+1);
+                        blue += p.blue * (8*k+1);
+                        
+                    } else {
+                        red -= p.red * k;
+                        green -= p.green * k;
+                        blue -= p.blue * k;
+                    }
                 }
             } else {
-                laplace_operation_(filtered_data_.at({x,y}), 4*k);
+                for (int i = 0; i < pixels.size(); i++) {
+                    Pixel p = pixels[i];
+                    if (i == pixels.size() / 2) {
+                        red += p.red * (4*k+1);
+                        green += p.green * (4*k+1);
+                        blue += p.blue * (4*k+1);
+                        
+                    } else if (i != 0 && i != 2 && i != 6 && i != 8) {
+                        red -= p.red * k;
+                        green -= p.green * k;
+                        blue -= p.blue * k;
+                    }
+                }
             }
 
-            // Orthogonal pixels
-            if (y > 0) laplace_operation_(filtered_data_.at({x,y-1}), -k);
-            if (y < height_ - 1) laplace_operation_(filtered_data_.at({x,y+1}), -k);
-            if (x > 0) laplace_operation_(filtered_data_.at({x-1,y}), -k);
-            if (x < width_ - 1) laplace_operation_(filtered_data_.at({x+1,y}), -k);
+            limit_color_value_(red);
+            limit_color_value_(green);
+            limit_color_value_(blue);
+
         }
     }
 }
