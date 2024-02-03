@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(smplImg
+project(smplfilter
   LANGUAGES CXX
   )
 
@@ -20,10 +20,10 @@ endif()
 
 FetchContent_MakeAvailable(fpng)
 
-add_executable(smplImg 
+add_executable(smplfilter 
     src/main.cpp 
     src/image.cpp 
     ${fpng_SOURCE_DIR}/src/lodepng.cpp
     )
-target_include_directories(smplImg PRIVATE src)
+target_include_directories(smplfilter PRIVATE src)
 include_directories(${fpng_SOURCE_DIR}/src)
