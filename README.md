@@ -2,7 +2,7 @@
 
 Exercise to implement what I've learned of image processing.
 
-Only median and highboost (and its diagonal counterpart) filters are currently implemented.
+Median and highboost (and its diagonal counterpart) filters are currently implemented.
 
 Supports .png files using [LodePNG](https://github.com/lvandeve/lodepng) (...fetched via [fpng](https://github.com/richgel999/fpng/)).
 
