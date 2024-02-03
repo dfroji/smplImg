@@ -1,4 +1,4 @@
-# smplImg
+# smplfilter
 
 Exercise to implement what I've learned of image processing.
 
