@@ -69,7 +69,7 @@ class Image {
         // Used in laplace filter
         void laplace_operation_(Pixel* pixel, const int& n);
 
-        // Filter data with a standard laplace operation
-        void laplace_filter_(const int& k);
+        // Filter data with a highboost filter
+        void highboost_filter_(const int& k, bool is_diagonal);
 
 };

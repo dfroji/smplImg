@@ -54,7 +54,10 @@ int main(int argc, char* argv[]) {
         return invalid_filter();
     } else {
         // Exit if not a filter (placeholder solution until more filters are added)
-        if (strcmp(filter, "median") && strcmp(filter, "laplace")) {
+        if (strcmp(filter, "median") && 
+            strcmp(filter, "highboost") && 
+            strcmp(filter, "dhighboost")
+            ) {
             return invalid_filter();
         }
         // Exit if invalid option for valid filter
@@ -67,9 +70,10 @@ int main(int argc, char* argv[]) {
             << "Error: option for median filter should be a multiple of 3" 
             << std::endl;
             return 1;
-        } else if (!strcmp(filter, "laplace") && (filter_option == nullptr)) {
+        } else if ((!strcmp(filter, "highboost") || !(strcmp(filter, "dhighboost"))) 
+                    && (filter_option == nullptr)) {
             std::cout 
-            << "Error: laplace filter should have a coefficient option"
+            << "Error: highboost filter should have an integer coefficient option"
             << std::endl;
             return 1;
         }

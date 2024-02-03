@@ -71,7 +71,8 @@ bool Image::encode_image(const char* filename) {
 
 void Image::filter(const char* filter, const char* filter_option) {
     if (!strcmp(filter, "median")) median_filter_(atoi(filter_option));
-    if (!strcmp(filter, "laplace")) laplace_filter_(atoi(filter_option));
+    if (!strcmp(filter, "highboost")) highboost_filter_(atoi(filter_option), false);
+    if (!strcmp(filter, "dhighboost")) highboost_filter_(atoi(filter_option), true);
 }
 
 //// PRIVATE ////
@@ -189,18 +190,37 @@ void Image::laplace_operation_(Pixel* pixel, const int& n) {
     add_to_color_value_(pixel->blue, n);
 }
 
-void Image::laplace_filter_(const int& k) {
+void Image::highboost_filter_(const int& k, bool is_diagonal) {
 
     // Process every pixel
     for (int y = 0; y < height_; y++) {
         for (int x = 0; x < width_; x++) {
 
-            // Perform laplace operation
-            laplace_operation_(filtered_data_.at({x,y}), k*(-4));
-            if (y > 0) laplace_operation_(filtered_data_.at({x,y-1}), k);
-            if (y < height_ - 1) laplace_operation_(filtered_data_.at({x,y+1}), k);
-            if (x > 0) laplace_operation_(filtered_data_.at({x-1,y}), k);
-            if (x < width_ - 1) laplace_operation_(filtered_data_.at({x+1,y}), k);
+            // If diagonal, perform the laplace opeartion with 
+            // diagonal pixels in mind
+            if (is_diagonal) {
+                laplace_operation_(filtered_data_.at({x,y}), 8*k + 1);
+                if (y > 0 && x > 0) {
+                    laplace_operation_(filtered_data_.at({x-1,y-1}), -k);
+                }
+                if (y > 0 && x < width_ - 1) {
+                    laplace_operation_(filtered_data_.at({x+1,y-1}), -k);
+                }
+                if (y < height_ - 1 && x > 0 ) {
+                    laplace_operation_(filtered_data_.at({x-1,y+1}), -k);
+                }
+                if (y < height_ - 1 && x < width_ - 1) {
+                    laplace_operation_(filtered_data_.at({x+1,y+1}), -k);
+                }
+            } else {
+                laplace_operation_(filtered_data_.at({x,y}), 4*k);
+            }
+
+            // Orthogonal pixels
+            if (y > 0) laplace_operation_(filtered_data_.at({x,y-1}), -k);
+            if (y < height_ - 1) laplace_operation_(filtered_data_.at({x,y+1}), -k);
+            if (x > 0) laplace_operation_(filtered_data_.at({x-1,y}), -k);
+            if (x < width_ - 1) laplace_operation_(filtered_data_.at({x+1,y}), -k);
         }
     }
 }
