@@ -26,5 +26,4 @@ mkdir build
 cd mkdir
 cmake ..
 make
-./terminal10
 ```
