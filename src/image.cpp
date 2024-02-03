@@ -187,6 +187,8 @@ void Image::highboost_filter_(const int& k, bool is_diagonal) {
 
             std::vector<Pixel> pixels = get_under_mask_({x,y}, 3);
 
+            // Get the current pixel's color values as references
+            // for performing the filtering
             Pixel* filtered_pixel = filtered_data_.at({x,y});
             int& red = filtered_pixel->red;
             int& green = filtered_pixel->green;
@@ -199,11 +201,14 @@ void Image::highboost_filter_(const int& k, bool is_diagonal) {
             if (is_diagonal) {
                 for (int i = 0; i < pixels.size(); i++) {
                     Pixel p = pixels[i];
+
+                    // Middle of the mask
                     if (i == pixels.size() / 2) {
                         red += p.red * (8*k+1);
                         green += p.green * (8*k+1);
                         blue += p.blue * (8*k+1);
                         
+                    // Every neighbour
                     } else {
                         red -= p.red * k;
                         green -= p.green * k;
@@ -213,11 +218,14 @@ void Image::highboost_filter_(const int& k, bool is_diagonal) {
             } else {
                 for (int i = 0; i < pixels.size(); i++) {
                     Pixel p = pixels[i];
+
+                    // Middle of the mask i.e. current pixel
                     if (i == pixels.size() / 2) {
                         red += p.red * (4*k+1);
                         green += p.green * (4*k+1);
                         blue += p.blue * (4*k+1);
-                        
+                       
+                    // Ignore corners of the mask
                     } else if (i != 0 && i != 2 && i != 6 && i != 8) {
                         red -= p.red * k;
                         green -= p.green * k;
@@ -226,6 +234,7 @@ void Image::highboost_filter_(const int& k, bool is_diagonal) {
                 }
             }
 
+            // Limit the color values to be within the bitdepth
             limit_color_value_(red);
             limit_color_value_(green);
             limit_color_value_(blue);
